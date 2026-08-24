@@ -2,9 +2,11 @@ name: 电影票监控
 
 on:
   schedule:
-    # 每5分钟执行一次（UTC 全天）
     - cron: "*/5 * * * *"
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   monitor:
@@ -22,8 +24,6 @@ jobs:
         run: pip install requests
 
       - name: 运行监控脚本
-        env:
-          BARK_URL: ${{ secrets.BARK_URL }}
         run: python ticket_monitor.py
 
       - name: 提交缓存更新
@@ -31,5 +31,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add ticket_cache.json
-          git diff --cached --quiet || git commit -m "更新场次缓存 $(date +'%Y-%m-%d %H:%M')"
-          git push
+          git diff --cached --quiet || (git commit -m "更新场次缓存 $(date +'%Y-%m-%d %H:%M')" && git push)
